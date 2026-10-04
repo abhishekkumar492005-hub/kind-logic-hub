@@ -16,7 +16,7 @@ export function Brand({ compact = false }: { compact?: boolean }) { return <Link
 
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
-  const [user, setUser] = useState<{ id: string; email?: string; name?: string } | null>(null)
+  const [user, setUser] = useState<{ id: string; email?: string | undefined; name?: string | undefined } | null>(null)
   const [ready, setReady] = useState(false)
   const [data, setData] = useState<{ exercises: Exercise[]; entries: Entry[]; profile: Profile | null }>({ exercises: [], entries: [], profile: null })
   const [addOpen, setAddOpen] = useState(false)
@@ -25,7 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const refresh = async (id = user?.id) => { if (!id) return; try { setData(await loadVault(id)) } catch (e) { toast.error(e instanceof Error ? e.message : 'Could not load your vault') } }
   useEffect(() => {
     let mounted = true
-    supabase.auth.getUser().then(({ data: auth }) => { if (!mounted) return; if (auth.user) { setUser({ id: auth.user.id, email: auth.user.email, name: auth.user.user_metadata?.name }); void refresh(auth.user.id) } else navigate({ to: '/auth' }); setReady(true) })
+    supabase.auth.getUser().then(({ data: auth }) => { if (!mounted) return; if (auth.user) { setUser({ id: auth.user.id, email: auth.user.email, name: auth.user.user_metadata?.['name'] }); void refresh(auth.user.id) } else navigate({ to: '/auth' }); setReady(true) })
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { if (!session && mounted) { setUser(null); navigate({ to: '/auth' }) } })
     return () => { mounted = false; listener.subscription.unsubscribe() }
   }, [])
@@ -41,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 function AddLift({ open, onOpenChange, selected, onSaved, exercises, userId }: { open: boolean; onOpenChange: (v:boolean)=>void; selected: string; onSaved: ()=>Promise<void>; exercises: Exercise[]; userId: string }) {
   const [exerciseId, setExerciseId] = useState(''); const [newName, setNewName] = useState(''); const [category, setCategory] = useState('Chest'); const [equipment, setEquipment] = useState(''); const [weight, setWeight] = useState(''); const [reps, setReps] = useState('1'); const [date, setDate] = useState(''); const [notes, setNotes] = useState(''); const [saving, setSaving] = useState(false)
   useEffect(() => { if (open) { setExerciseId(selected); setDate(new Date().toISOString().slice(0,10)); setWeight(''); setReps('1'); setNewName(''); setNotes('') } }, [open, selected])
-  const submit = async (e: React.FormEvent) => { e.preventDefault(); if (!Number.isFinite(Number(weight)) || Number(weight) <= 0 || Number(reps) < 1) return toast.error('Enter a valid weight and reps'); setSaving(true)
+  const submit = async (e: React.FormEvent) => { e.preventDefault(); if (!Number.isFinite(Number(weight)) || Number(weight) <= 0 || Number(reps) < 1) { toast.error('Enter a valid weight and reps'); return } setSaving(true)
     try { let id = exerciseId
       if (!id) { if (!newName.trim()) throw new Error('Enter an exercise name'); if (exercises.length >= 5) throw new Error('Free accounts can track up to 5 exercises.'); const { data, error } = await supabase.from('exercises').insert({ user_id: userId, name: newName.trim(), category, equipment, notes }).select('id').single(); if (error) throw error; id = data.id }
       const { data: previous, error: readError } = await supabase.from('workout_entries').select('weight').eq('exercise_id', id).order('weight', { ascending: false }).limit(1); if (readError) throw readError
