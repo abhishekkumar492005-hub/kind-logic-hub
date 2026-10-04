@@ -1,0 +1,2 @@
+CREATE OR REPLACE FUNCTION public.limit_free_exercises() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ BEGIN IF (SELECT count(*) FROM public.exercises WHERE user_id = NEW.user_id) >= 5 THEN RAISE EXCEPTION 'Free accounts can track up to 5 exercises.'; END IF; RETURN NEW; END; $$;
+CREATE TRIGGER limit_free_exercises_before_insert BEFORE INSERT ON public.exercises FOR EACH ROW EXECUTE FUNCTION public.limit_free_exercises();
