@@ -1,0 +1,17 @@
+CREATE TABLE public.profiles (id uuid PRIMARY KEY, name text NOT NULL DEFAULT '', fitness_goal text NOT NULL DEFAULT 'Strength', training_days integer NOT NULL DEFAULT 0, created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
+GRANT ALL ON public.profiles TO service_role;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own profile" ON public.profiles FOR ALL TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+CREATE TABLE public.exercises (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, name text NOT NULL, category text NOT NULL DEFAULT 'Other', equipment text NOT NULL DEFAULT '', notes text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.exercises TO authenticated;
+GRANT ALL ON public.exercises TO service_role;
+ALTER TABLE public.exercises ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own exercises" ON public.exercises FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+CREATE INDEX exercises_user_idx ON public.exercises(user_id);
+CREATE TABLE public.workout_entries (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL, exercise_id uuid NOT NULL REFERENCES public.exercises(id) ON DELETE CASCADE, weight numeric(8,2) NOT NULL CHECK(weight > 0), reps integer NOT NULL DEFAULT 1 CHECK(reps > 0), performed_at date NOT NULL DEFAULT CURRENT_DATE, notes text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.workout_entries TO authenticated;
+GRANT ALL ON public.workout_entries TO service_role;
+ALTER TABLE public.workout_entries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own workout entries" ON public.workout_entries FOR ALL TO authenticated USING (user_id = auth.uid() AND EXISTS (SELECT 1 FROM public.exercises e WHERE e.id = exercise_id AND e.user_id = auth.uid())) WITH CHECK (user_id = auth.uid() AND EXISTS (SELECT 1 FROM public.exercises e WHERE e.id = exercise_id AND e.user_id = auth.uid()));
+CREATE INDEX workout_entries_exercise_date_idx ON public.workout_entries(exercise_id, performed_at DESC);

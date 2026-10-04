@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791096646676,
+      "tag": "0000_create_pr_vault_data",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791096855691,
+      "tag": "0001_enforce_free_exercise_limit",
+      "breakpoints": true
+    }
+  ]
+}
