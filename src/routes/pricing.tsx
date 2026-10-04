@@ -1,0 +1,3 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { PricingPage } from '@/components/pr-vault/marketing'
+export const Route = createFileRoute('/pricing')({head:()=>({meta:[{title:'Pricing — PR Vault'},{name:'description',content:'Start tracking personal records for free. Explore PR Vault plans and upcoming PRO features.'},{property:'og:title',content:'Pricing — PR Vault'},{property:'og:description',content:'Start free and explore the plans for your strength journey.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary_large_image'}]}),component:PricingPage})
