@@ -1,0 +1,4 @@
+- [ ] Build branded landing, pricing and authentication pages.
+- [ ] Build authenticated workout dashboard, exercise history, analytics and profile.
+- [ ] Connect user-specific exercise and workout records with PR detection.
+- [ ] Verify responsive views and key interactions.
