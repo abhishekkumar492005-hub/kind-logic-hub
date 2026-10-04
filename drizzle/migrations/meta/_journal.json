@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791096646676,
+      "tag": "0000_create_pr_vault_data",
+      "breakpoints": true
+    }
+  ]
 }
